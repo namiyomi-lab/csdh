@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慢性硬膜下血腫 手術シミュレーター</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#38302B; --bg:#FBF3E4; --panel:#FFFFFF;
+    --teal:#0F7E8C; --teal-soft:#E2F4F6;
+    --coral:#E86A52; --coral-soft:#FFE9E2;
+    --sun:#FFC53D; --leaf:#2FA84F; --leaf-soft:#E4F6E9;
+    --heme:#8E3324; --heme-dark:#5E1F16;
+    --bone:#EFE0BC; --skin:#F6CFA5;
+    --ng:#D64545;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN",sans-serif;
+    background:var(--bg); color:var(--ink);
+    font-weight:500; line-height:1.55;
+  }
+  .wrap{max-width:780px; margin:0 auto; padding:0 12px 44px;}
+  header{
+    background:var(--heme); color:#fff;
+    padding:16px 14px 13px; text-align:center;
+    border-bottom:4px solid var(--ink);
+  }
+  header h1{margin:0; font-size:23px; font-weight:900; letter-spacing:.02em;}
+  header p{margin:4px 0 0; font-size:13px; font-weight:700;}
+  nav.tabs{
+    display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+    padding:12px 8px 4px;
+  }
+  nav.tabs button{
+    font-family:inherit; font-weight:900; font-size:16px;
+    padding:9px 15px; border-radius:999px; cursor:pointer;
+    background:#fff; color:var(--ink); border:3px solid var(--ink);
+  }
+  nav.tabs button.active{background:var(--teal); color:#fff;}
+  section.tab{display:none; padding-top:10px;}
+  section.tab.active{display:block;}
+  .panel{
+    background:var(--panel); border:3px solid var(--ink); border-radius:20px;
+    padding:12px; margin-bottom:12px;
+  }
+  .panel h2{margin:2px 0 8px; font-size:19px; font-weight:900;}
+  .lead{font-size:14px; margin:0 0 10px;}
+  .btn{
+    font-family:inherit; font-weight:900; font-size:16px; cursor:pointer;
+    border:3px solid var(--ink); border-radius:14px; padding:10px 18px;
+    background:var(--sun); color:var(--ink);
+  }
+  .btn.sub{background:#fff;}
+  .btn.teal{background:var(--teal); color:#fff;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .seg{display:flex; gap:8px; flex-wrap:wrap;}
+  .seg button{
+    font-family:inherit; font-weight:900; font-size:15px; cursor:pointer;
+    border:3px solid var(--ink); border-radius:999px; padding:8px 16px; background:#fff; color:var(--ink);
+  }
+  .seg button.active{background:var(--coral); color:#fff;}
+  .controls{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0;}
+  .msg{
+    border:3px solid var(--ink); border-radius:14px; background:#FFF9EC;
+    padding:10px 12px; font-weight:700; font-size:15px; min-height:52px;
+    display:flex; align-items:center;
+  }
+  .stage{
+    background:linear-gradient(180deg,#FFFDF6,#FBEEDB);
+    border:3px solid var(--ink); border-radius:16px; overflow:hidden;
+  }
+  .stage svg{display:block; width:100%; height:auto;}
+  .lbl{font-weight:700; fill:var(--ink);}
+  .lbl-w{font-weight:700; fill:#fff;}
+  .two{display:flex; gap:12px; flex-wrap:wrap;}
+  .two > *{flex:1 1 300px; min-width:0;}
+  .role{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+  .role .box{flex:1 1 260px; border:3px solid var(--ink); border-radius:14px; padding:9px 11px; font-size:14px; font-weight:700;}
+  .role .op{background:var(--teal-soft);}
+  .role .as{background:var(--coral-soft);}
+  .role .tag{display:inline-block; font-weight:900; font-size:12px; padding:1px 9px; border-radius:999px; border:2px solid var(--ink); margin-bottom:4px; background:#fff;}
+  .role .op .tag{background:var(--teal); color:#fff;}
+  .role .as .tag{background:var(--coral); color:#fff;}
+  .dots{display:flex; gap:5px; flex-wrap:wrap; margin:10px 2px 2px;}
+  .dots i{width:13px; height:13px; border-radius:50%; border:2px solid var(--ink); background:#fff; display:block;}
+  .dots i.done{background:var(--sun);}
+  .dots i.now{background:var(--coral); transform:scale(1.25);}
+  .stephead{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;}
+  .stephead .no{background:var(--ink); color:#fff; font-weight:900; font-size:13px; padding:2px 10px; border-radius:999px;}
+  .stephead h3{margin:0; font-size:19px; font-weight:900;}
+  .items{display:flex; flex-wrap:wrap; gap:8px;}
+  .items button{
+    font-family:inherit; font-weight:900; font-size:15px; cursor:pointer;
+    border:3px solid var(--ink); border-radius:999px; padding:8px 14px; background:#fff; color:var(--ink);
+  }
+  .items button.sel{background:var(--sun);}
+  .detail{
+    margin-top:12px; border:3px solid var(--ink); border-radius:14px; background:#FFF9EC; padding:11px 13px;
+  }
+  .detail h3{margin:0 0 4px; font-size:18px; font-weight:900;}
+  .detail p{margin:4px 0; font-size:14px; font-weight:700;}
+  .detail .when{display:inline-block; margin-top:4px; background:var(--teal); color:#fff; font-weight:900; font-size:12.5px; padding:2px 10px; border-radius:999px;}
+  .qbox .q{font-size:17px; font-weight:900; margin-bottom:10px;}
+  .choices{display:flex; flex-direction:column; gap:8px;}
+  .choices button{
+    font-family:inherit; font-weight:700; font-size:15px; text-align:left; cursor:pointer;
+    border:3px solid var(--ink); border-radius:14px; padding:10px 13px; background:#fff; color:var(--ink);
+  }
+  .choices button.ok{background:var(--leaf-soft); border-color:var(--leaf);}
+  .choices button.ng{background:#FDE8E8; border-color:var(--ng);}
+  .choices button:disabled{cursor:default; opacity:.92;}
+  .explain{margin-top:10px; font-size:14px; font-weight:700; border-radius:12px; padding:9px 12px; display:none;}
+  .explain.show{display:block;}
+  .explain.good{background:var(--leaf-soft);}
+  .explain.bad{background:#FDE8E8;}
+  .note{font-size:12.5px; color:#6B5D4F; font-weight:700; margin-top:8px;}
+  .kv{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0;}
+  .kv span{border:2.5px solid var(--ink); border-radius:999px; padding:2px 11px; font-size:13px; font-weight:900; background:#fff;}
+  @keyframes flowdash{to{stroke-dashoffset:-28;}}
+  .flow{stroke-dasharray:7 7; animation:flowdash 1s linear infinite;}
+  @keyframes pulse{0%,100%{opacity:.25;}50%{opacity:.95;}}
+  .pulse{animation:pulse 1.6s ease-in-out infinite;}
+  @keyframes drip{0%{transform:translateY(0); opacity:0;}15%{opacity:1;}85%{opacity:1;}100%{transform:translateY(26px); opacity:0;}}
+  .drip{animation:drip 1.8s ease-in infinite;}
+</style>
+</head>
+<body>
+<header>
+  <h1>慢性硬膜下血腫 手術シミュレーター</h1>
+  <p>研修医（術者）と、介助につく看護師のための練習アプリ</p>
+</header>
+<div class="wrap">
+  <nav class="tabs">
+    <button data-tab="t1" class="active">もくてき・しくみ</button>
+    <button data-tab="t2">ぶっぴん</button>
+    <button data-tab="t3">てじゅん</button>
+    <button data-tab="t4">クイズ</button>
+  </nav>
+
+  <!-- ===== タブ1: もくてき・しくみ ===== -->
+  <section class="tab active" id="t1">
+    <div class="panel">
+      <h2>手術の目的</h2>
+      <p class="lead">慢性硬膜下血腫は、頭の骨の内側（硬膜の下）に、古い血液が液状になって少しずつたまる病気です。たまった血腫が脳を押すと、頭痛・片麻痺（片側の手足の動かしにくさ）・もの忘れのような症状が出ます。</p>
+      <div class="kv">
+        <span>標準の手術：穿頭血腫除去術</span>
+        <span>多くは局所麻酔</span>
+        <span>目的：血腫を抜いて脳の圧迫を取る</span>
+      </div>
+      <p class="lead">骨に小さな孔（穿頭孔）を開け、液状の血腫を出し、生理食塩水で洗って、閉鎖式ドレーンを残すのが基本の流れです。下の断面で、血腫が減って脳が戻る様子を見てみましょう。</p>
+    </div>
+    <div class="panel">
+      <h2>断面で見る：血腫と脳</h2>
+      <div class="two">
+        <div>
+          <div class="stage" id="secStage1"></div>
+          <p class="note">頭頂部を通る断面の模式図。右側に血腫がたまり、脳を左へ押しています（正中偏位）。</p>
+        </div>
+        <div>
+          <div class="stage" id="ctStage1"></div>
+          <p class="note">CT風の見え方。血腫は骨の内側に沿って三日月形に広がります。白さ（吸収値）は時期によって変わり、脳と同じ白さで見えにくい時期もあります。</p>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="playBtn">▶ 手術の流れを見る</button>
+        <button class="btn sub" id="resetBtn">はじめに戻す</button>
+        <div class="seg" role="group" aria-label="再生速度">
+          <button data-speed="0.5">0.5倍</button>
+          <button data-speed="1" class="active">1倍</button>
+        </div>
+      </div>
+      <div class="msg" id="msg1">血腫が脳を押している状態です。「手術の流れを見る」を押すと、排出→洗浄→脳が戻る、まで進みます。</div>
+    </div>
+  </section>
+
+  <!-- ===== タブ2: ぶっぴん ===== -->
+  <section class="tab" id="t2">
+    <div class="panel">
+      <h2>物品を確認する</h2>
+      <p class="lead">穿頭血腫除去術で使う主な物品です。タップすると「何に使うか」と「手順のどこで出てくるか」が出ます。製品の種類や太さは施設で異なるものもあります。</p>
+      <div class="items" id="itemList"></div>
+      <div class="detail" id="itemDetail">
+        <h3>物品を選んでください</h3>
+        <p>上のボタンから物品をタップすると、使いみちがここに出ます。</p>
+      </div>
+      <p class="note">※ ドレーンや縫合糸の種類、ドリルの機種は施設により異なります。自施設の手順書で確認してください。</p>
+    </div>
+  </section>
+
+  <!-- ===== タブ3: てじゅん ===== -->
+  <section class="tab" id="t3">
+    <div class="panel">
+      <div class="stephead">
+        <span class="no" id="stepNo">ステップ 1 / 14</span>
+        <h3 id="stepTitle">体位・頭部固定</h3>
+      </div>
+      <div class="stage" id="stage3"></div>
+      <div class="dots" id="stepDots"></div>
+      <div class="role">
+        <div class="box op"><span class="tag">術者</span><div id="opLine"></div></div>
+        <div class="box as"><span class="tag">介助</span><div id="asLine"></div></div>
+      </div>
+      <div class="controls">
+        <button class="btn sub" id="prevStep">← もどる</button>
+        <button class="btn" id="nextStep">つぎへ →</button>
+        <div class="seg" role="group" aria-label="再生速度">
+          <button data-speed3="0.5">0.5倍</button>
+          <button data-speed3="1" class="active">1倍</button>
+        </div>
+      </div>
+      <p class="note">手順の細部（孔の数・大きさ、切開の長さ、洗浄量、ドレーン抜去の時期など）は施設により異なります。ここでは標準的な報告に基づく流れを示しています。</p>
+    </div>
+  </section>
+
+  <!-- ===== タブ4: クイズ ===== -->
+  <section class="tab" id="t4">
+    <div class="panel qbox">
+      <h2>かんさつ・確認クイズ</h2>
+      <div id="quizBody"></div>
+    </div>
+  </section>
+
+  <p class="note" style="text-align:center;">このアプリは学習用です。実際の手順・物品は自施設の手順書と指導者の指示に従ってください。</p>
+</div>
+
+<script>
+/* ================= 共通ヘルパー ================= */
+const $ = s => document.querySelector(s);
+function P(cx,cy,rx,ry,deg){ const r=deg*Math.PI/180; return [cx+rx*Math.cos(r), cy+ry*Math.sin(r)]; }
+function ellPath(cx,cy,rx,ry){
+  return `M ${cx-rx},${cy} a ${rx},${ry} 0 1,0 ${2*rx},0 a ${rx},${ry} 0 1,0 ${-2*rx},0 Z`;
+}
+function ringPath(cx,cy,rx1,ry1,rx2,ry2){
+  return ellPath(cx,cy,rx1,ry1) + ' ' + ellPath(cx,cy,rx2,ry2);
+}
+/* 血腫の三日月パス（右側）。t=0..1 で厚みが変わる */
+function crescentPath(cx,cy,rx,ry,t){
+  const depth = 2 + t*40;
+  const [otx,oty] = P(cx,cy,rx,ry,-80), [obx,oby] = P(cx,cy,rx,ry,80);
+  const cx2 = cx - depth*0.25, rx2 = rx-depth, ry2 = ry-depth*0.85;
+  const [ibx,iby] = P(cx2,cy,rx2,ry2,80);
+  return `M ${otx},${oty} A ${rx},${ry} 0 0 1 ${obx},${oby} A ${rx2},${ry2} 0 0 0 ${P(cx2,cy,rx2,ry2,-80)[0]},${P(cx2,cy,rx2,ry2,-80)[1]} Z`;
+}
+
+/* ================= 断面SVG =================
+   opts: t(血腫量), labels(bool), overlay(ステップ別部品HTML), hole('none'|'open'|'closed'),
+         heme(血腫の色), drain(bool), bag(bool) */
+function secSVG(o){
+  const u = o.uid || '';
+  const cx=205, cy=175;
+  const t = o.t ?? 1;
+  const shift = t*13;
+  const heme = o.heme || '#7C2D1E';
+  const gyri = [
+    'M110,120 q14,-12 26,0 q12,10 24,2','M96,168 q14,-12 26,0 q12,10 24,2',
+    'M112,216 q14,-12 26,0 q12,10 24,2','M150,96 q14,-12 26,0 q12,10 24,2',
+    'M238,110 q14,-12 26,0 q12,10 22,2','M140,248 q14,-12 26,0 q12,10 24,2',
+    'M226,238 q14,-12 26,0 q12,10 22,2','M96,140 q10,-9 20,0 q10,8 20,1'
+  ].map(d=>`<path d="${d}" fill="none" stroke="#C97B6E" stroke-width="3.4" stroke-linecap="round"/>`).join('');
+  const ventR = 1 - t*0.55;
+  let labels='';
+  if(o.labels){
+    labels = `
+      <g font-size="13.5">
+        <text class="lbl" x="8" y="52">頭皮</text><line x1="40" y1="50" x2="66" y2="62" stroke="#8A6D4F" stroke-width="1.6"/>
+        <text class="lbl" x="8" y="82">頭蓋骨</text><line x1="48" y1="80" x2="76" y2="84" stroke="#8A6D4F" stroke-width="1.6"/>
+        <text class="lbl" x="8" y="112">硬膜</text><line x1="40" y1="110" x2="84" y2="106" stroke="#8A6D4F" stroke-width="1.6"/>
+        <text class="lbl" x="330" y="150">血腫</text><line x1="328" y1="148" x2="${cx+118}" y2="160" stroke="#8A6D4F" stroke-width="1.6"/>
+        <text class="lbl" x="330" y="196">脳</text><line x1="328" y1="194" x2="292" y2="192" stroke="#8A6D4F" stroke-width="1.6"/>
+        <text class="lbl" x="8" y="300">側脳室</text><line x1="52" y1="296" x2="168" y2="196" stroke="#8A6D4F" stroke-width="1.6"/>
+      </g>`;
+  }
+  /* 穿頭部（局所座標: +Yが頭の内側） */
+  let site='';
+  if(o.hole==='open' || o.hole==='closed'){
+    site = `<g transform="translate(295,71) rotate(41)">
+      ${o.hole==='open'
+        ? `<rect x="-12" y="-13" width="24" height="30" rx="3" fill="#4A2E26"/>
+           <rect x="-13.5" y="-13" width="4" height="30" fill="#EFE0BC"/>
+           <rect x="9.5" y="-13" width="4" height="30" fill="#EFE0BC"/>`
+        : `<rect x="-13" y="-14" width="26" height="10" rx="4" fill="#F6CFA5" stroke="#C98F5F" stroke-width="1.4"/>
+           <path d="M-9,-13 l5,7 M-9,-6 l5,-7 M1,-13 l5,7 M1,-6 l5,-7" stroke="#38302B" stroke-width="1.6"/>`}
+    </g>`;
+  }
+  return `<svg viewBox="0 0 420 340" role="img" aria-label="頭部の断面図">
+  <defs>
+    <linearGradient id="boneG${u}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5E8C6"/><stop offset="1" stop-color="#DFC491"/>
+    </linearGradient>
+    <linearGradient id="skinG${u}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F8D7AC"/><stop offset="1" stop-color="#EDB87F"/>
+    </linearGradient>
+    <linearGradient id="brainG${u}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F0B7AC"/><stop offset="1" stop-color="#E1988C"/>
+    </linearGradient>
+    <linearGradient id="hemeG${u}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${heme}"/><stop offset="1" stop-color="#4E1B10"/>
+    </linearGradient>
+    <clipPath id="cavClip${u}"><path d="${ellPath(cx,cy,126,112)}"/></clipPath>
+  </defs>
+  <rect x="0" y="0" width="420" height="340" fill="#FFFDF6"/>
+  <!-- 脳（血腫に押されて左へずれる） -->
+  <g clip-path="url(#cavClip${u})">
+    <g transform="translate(${-shift},0)">
+      <path d="${ellPath(cx,cy,127,113)}" fill="url(#brainG${u})"/>
+      ${gyri}
+      <path d="M186,158 q-14,16 0,34 q10,-16 0,-34 Z" fill="#D98A7C"/>
+      <g transform="translate(228,175) scale(${ventR},1) translate(-228,-175)">
+        <path d="M228,158 q14,16 0,34 q-10,-16 0,-34 Z" fill="#D98A7C"/>
+      </g>
+    </g>
+    <!-- 血腫（三日月） -->
+    <path d="${crescentPath(cx,cy,126,112,t)}" fill="url(#hemeG${u})"/>
+    <path d="${crescentPath(cx,cy,126,112,t)}" fill="none" stroke="#A9805F" stroke-width="2"/>
+    <!-- 正中線 -->
+    <path d="M ${cx},64 Q ${cx-shift*1.15},${cy} ${cx},286" fill="none" stroke="#7A6A58" stroke-width="2" stroke-dasharray="6 5"/>
+  </g>
+  <!-- 硬膜 -->
+  <path d="${ellPath(cx,cy,126,112)}" fill="none" stroke="#B49B78" stroke-width="2.6"/>
+  <!-- 頭蓋骨・頭皮 -->
+  <path d="${ringPath(cx,cy,140,126,126,112)}" fill="url(#boneG${u})" fill-rule="evenodd" stroke="#C9A86A" stroke-width="1.4"/>
+  <path d="${ringPath(cx,cy,152,138,140,126)}" fill="url(#skinG${u})" fill-rule="evenodd" stroke="#C98F5F" stroke-width="1.4"/>
+  ${site}
+  ${o.overlay||''}
+  ${labels}
+</svg>`;
+}
+
+/* ================= CT風SVG ================= */
+function ctSVG(t){
+  const cx=210, cy=170, shift=t*12;
+  return `<svg viewBox="0 0 420 340" role="img" aria-label="CT風の画像">
+  <rect x="0" y="0" width="420" height="340" fill="#20242A"/>
+  <g>
+    <path d="${ellPath(cx,cy,120,110)}" fill="#878E96"/>
+    <g clip-path="url(#ctClip)">
+      <g transform="translate(${-shift},0)">
+        <path d="M150,120 q12,-10 24,0 q10,9 22,1 M140,180 q12,-10 24,0 q10,9 22,1 M250,128 q12,-10 24,0 q10,9 20,1" fill="none" stroke="#6E757D" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M192,152 q-11,14 0,30 q8,-14 0,-30 Z" fill="#565D64"/>
+        <g transform="translate(232,167) scale(${1-t*0.55},1) translate(-232,-167)">
+          <path d="M232,152 q11,14 0,30 q-8,-14 0,-30 Z" fill="#565D64"/>
+        </g>
+      </g>
+      <path d="${crescentPath(cx,cy,118,108,t)}" fill="#C7CCD2"/>
+      <path d="M ${cx},62 Q ${cx-shift*1.15},${cy} ${cx},278" fill="none" stroke="#D8DCE0" stroke-width="1.8" stroke-dasharray="5 5"/>
+    </g>
+    <path d="${ringPath(cx,cy,132,121,120,110)}" fill="#E9E9E9" fill-rule="evenodd"/>
+    <path d="${ellPath(cx,cy,120,110)}" fill="none" stroke="#3A3F45" stroke-width="2"/>
+  </g>
+  <defs><clipPath id="ctClip"><path d="${ellPath(cx,cy,120,110)}"/></clipPath></defs>
+  <text x="14" y="30" font-size="13" class="lbl-w">CT風（模式）</text>
+  <text x="330" y="322" font-size="12" class="lbl-w">三日月形の血腫</text>
+</svg>`;
+}
+
+/* ================= 外観SVG（ステップ1〜4用） ================= */
+function extSVG(step){
+  const siteX=272, siteY=98;
+  let behind='', front='';
+  if(step===0){
+    behind = `
+      <path d="M112,232 Q92,296 168,306 L242,306 Q318,296 298,232" fill="none" stroke="#9AA0A6" stroke-width="17" stroke-linecap="round"/>
+      <text class="lbl" x="14" y="34" font-size="14">馬蹄形の台＋テープで固定</text>`;
+    front = `
+      <rect x="98" y="118" width="205" height="17" rx="8" fill="#E7D9B8" stroke="#C9B586" stroke-width="1.4" transform="rotate(-13 200 126)" opacity="0.96"/>
+      <rect x="104" y="222" width="200" height="17" rx="8" fill="#E7D9B8" stroke="#C9B586" stroke-width="1.4" transform="rotate(9 204 230)" opacity="0.96"/>`;
+  }
+  if(step===1){
+    front = `
+      <circle cx="${siteX}" cy="${siteY}" r="17" fill="none" stroke="#D64545" stroke-width="3.4"/>
+      <path d="M${siteX-9},${siteY-9} l18,18 M${siteX+9},${siteY-9} l-18,18" stroke="#D64545" stroke-width="3.4"/>
+      <g>
+        <rect x="318" y="14" width="88" height="76" rx="8" fill="#20242A"/>
+        <path d="${crescentPath(362,52,30,26,0.9)}" fill="#C7CCD2"/>
+        <circle cx="362" cy="52" r="33" fill="none" stroke="#3A3F45" stroke-width="3"/>
+        <text class="lbl" x="302" y="108" font-size="11">CTで最も厚い場所を確認</text>
+      </g>`;
+  }
+  if(step===2){
+    front = `
+      <ellipse cx="${siteX}" cy="${siteY}" rx="46" ry="36" fill="#B4692F" opacity="0.35"/>
+      <ellipse cx="${siteX}" cy="${siteY}" rx="31" ry="23" fill="#F6CFA5" stroke="#C98F5F" stroke-width="1.6"/>
+      <text class="lbl" x="14" y="34" font-size="14">剃毛して消毒</text>`;
+  }
+  if(step===3){
+    front = `
+      <path d="M6,6 H414 V334 H6 Z M ${siteX-52},${siteY-44} h104 v88 h-104 Z" fill="#2E8C9C" fill-rule="evenodd" opacity="0.96"/>
+      <path d="M6,90 q120,26 240,6 M6,250 q140,-22 300,4 M330,6 q-16,150 6,300" stroke="#23707D" stroke-width="3" fill="none" opacity="0.6"/>
+      <ellipse cx="${siteX}" cy="${siteY}" rx="31" ry="23" fill="#F6CFA5" stroke="#C98F5F" stroke-width="1.6"/>
+      <circle cx="${siteX}" cy="${siteY}" r="15" fill="none" stroke="#D64545" stroke-width="3"/>
+      <text class="lbl-w" x="14" y="322" font-size="14">ドレープ（清潔な覆布）</text>`;
+  }
+  return `<svg viewBox="0 0 420 340" role="img" aria-label="頭部の外観図">
+  <defs>
+    <linearGradient id="skinG2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F8D7AC"/><stop offset="1" stop-color="#EDB87F"/>
+    </linearGradient>
+    <linearGradient id="hairG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7D5A41"/><stop offset="1" stop-color="#5E4030"/>
+    </linearGradient>
+    <clipPath id="headClip"><path d="${ellPath(205,180,128,110)}"/></clipPath>
+  </defs>
+  <rect x="0" y="0" width="420" height="340" fill="#FFFDF6"/>
+  <rect x="10" y="298" width="400" height="12" rx="6" fill="#B9A888"/>
+  ${behind}
+  <g transform="rotate(-16 205 180)">
+    <path d="${ellPath(205,180,128,110)}" fill="url(#skinG2)" stroke="#C98F5F" stroke-width="1.6"/>
+    <g clip-path="url(#headClip)">
+      <ellipse cx="205" cy="128" rx="126" ry="82" fill="url(#hairG)"/>
+      <path d="M120,120 q50,-34 104,-26 M150,96 q34,-18 66,-12" fill="none" stroke="#8A6A4E" stroke-width="4.4" stroke-linecap="round"/>
+      <path d="M196,84 q16,10 12,24 q-2,10 -14,12" fill="none" stroke="#8A6A4E" stroke-width="3.6" stroke-linecap="round"/>
+    </g>
+    <path d="M326,182 q19,2 19,19 q0,16 -17,18" fill="none" stroke="#C98F5F" stroke-width="4.4"/>
+    <path d="M330,192 q8,2 8,10" fill="none" stroke="#C98F5F" stroke-width="3"/>
+  </g>
+  ${front}
+</svg>`;
+}
+
+/* ================= タブ1: アニメーション ================= */
+let t1 = 1, speed1 = 1, anim1 = null;
+const PHASES = [
+  {until:0.55, msg:'硬膜と血腫の外膜を開けると、黒褐色の液状血腫が流れ出ます。'},
+  {until:0.2,  msg:'温めた生理食塩水で血腫腔を洗います。洗浄液が澄んでくるまで繰り返します。'},
+  {until:0.051,msg:'血腫が減り、押されていた脳が戻ってきます。正中偏位も改善します。'},
+  {until:-1,   msg:'最後に閉鎖式ドレーンを血腫腔に残し、残った血腫が少しずつ出るようにします。これが手術の目的です。'}
+];
+function render1(){
+  $('#secStage1').innerHTML = secSVG({t:t1, labels:true, uid:'a'});
+  $('#ctStage1').innerHTML = ctSVG(t1);
+}
+function msgFor(t){
+  for(const p of PHASES){ if(t > p.until) return p.msg; }
+  return PHASES[PHASES.length-1].msg;
+}
+function playAnim(){
+  if(anim1){ cancelAnimationFrame(anim1); anim1=null; $('#playBtn').textContent='▶ 手術の流れを見る'; return; }
+  if(t1 <= 0.051) t1 = 1;
+  $('#playBtn').textContent='⏸ とめる';
+  const dur = 6500 / speed1; let start = null; const from = t1;
+  const stepFn = ts => {
+    if(!start) start = ts;
+    const k = Math.min(1, (ts-start)/dur);
+    t1 = from + (0.05 - from) * k;
+    render1(); $('#msg1').textContent = msgFor(t1);
+    if(k < 1){ anim1 = requestAnimationFrame(stepFn); }
+    else { anim1 = null; $('#playBtn').textContent='▶ もう一度見る'; }
+  };
+  anim1 = requestAnimationFrame(stepFn);
+}
+$('#playBtn').addEventListener('click', playAnim);
+$('#resetBtn').addEventListener('click', () => {
+  if(anim1){ cancelAnimationFrame(anim1); anim1=null; }
+  t1 = 1; render1();
+  $('#msg1').textContent = '血腫が脳を押している状態です。「手術の流れを見る」を押すと、排出→洗浄→脳が戻る、まで進みます。';
+  $('#playBtn').textContent='▶ 手術の流れを見る';
+});
+document.querySelectorAll('[data-speed]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-speed]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); speed1 = parseFloat(b.dataset.speed);
+}));
+render1();
+</script>
+
+<script>
+/* ================= タブ2: ぶっぴん ================= */
+const ITEMS = [
+  {n:'馬蹄形頭部支持台・固定テープ', u:'頭をのせる台。頭を健側へ回した姿勢でしっかり固定します。', w:'ステップ1 体位・頭部固定'},
+  {n:'ドレーピング一式', u:'清潔な覆布（ドレープ）。手術する場所だけを出して、清潔な術野を作ります。', w:'ステップ4 ドレーピング'},
+  {n:'局所麻酔薬・注射器', u:'切開する場所の痛みを取る薬。切開線に沿って注射します。', w:'ステップ5 局所麻酔'},
+  {n:'メス', u:'皮膚を切る刃物。硬膜を十字に切るときにも使います（刃の番手は施設で異なります）。', w:'ステップ6 皮膚切開／ステップ9 硬膜切開'},
+  {n:'電気メス', u:'電気の熱で切りながら止血する器械。皮膚や骨膜の切開に使います。', w:'ステップ6〜7'},
+  {n:'開創器（皮膚フック）', u:'切開した皮膚を両側に引いて、術野を広げておく道具。', w:'ステップ6 皮膚切開〜'},
+  {n:'骨膜剥離子', u:'頭蓋骨の表面の膜（骨膜）をはがして、骨を出す道具。', w:'ステップ7 骨膜剥離'},
+  {n:'穿頭ドリル／パーフォレーター', u:'頭蓋骨に小さな孔（穿頭孔）を開けるドリル。機種は施設で異なります。', w:'ステップ8 穿頭'},
+  {n:'ボーンワックス', u:'骨の切り口に塗って、骨からの出血を止めるロウ状の材料。', w:'ステップ8 穿頭'},
+  {n:'双極バイポーラ', u:'先端の2本で挟んで焼く止血の器械。硬膜を焼いてから切るのにも使います。', w:'ステップ9 硬膜切開'},
+  {n:'硬膜フック', u:'硬膜をそっと持ち上げて、メスで切るのを助ける細いフック。', w:'ステップ9 硬膜切開'},
+  {n:'洗浄用シリンジ（50〜60mL）', u:'温めた生理食塩水を、血腫腔へゆっくり入れるための大きな注射器。', w:'ステップ11 洗浄'},
+  {n:'温めた生理食塩水', u:'血腫腔を洗う液体。冷たいと体温を下げるので温めて使います。', w:'ステップ11 洗浄'},
+  {n:'洗浄・留置用チューブ', u:'洗浄液を腔の奥まで届ける細いチューブ。そのままドレーンとして残すこともあります。', w:'ステップ11 洗浄／ステップ12 ドレーン挿入'},
+  {n:'縫合糸・針', u:'創を閉じる糸と針。ドレーンの固定にも使います（種類は施設で異なります）。', w:'ステップ13 閉創'},
+  {n:'閉鎖式ドレーンバッグ', u:'ドレーンの先につなぐ袋。吸引はかけず、残った血腫や液をためます。', w:'ステップ14 ドレーン固定・バッグ接続'}
+];
+const itemList = $('#itemList');
+ITEMS.forEach((it, i) => {
+  const b = document.createElement('button');
+  b.textContent = it.n;
+  b.addEventListener('click', () => {
+    itemList.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel');
+    $('#itemDetail').innerHTML = `<h3>${it.n}</h3><p>${it.u}</p><span class="when">出てくる場面：${it.w}</span>`;
+  });
+  itemList.appendChild(b);
+});
+
+/* ================= タブ3: てじゅん ================= */
+const SITE = 'translate(295,71) rotate(41)';
+const STEPS = [
+  {title:'体位・頭部固定', view:'ext', t:1,
+   op:'仰臥位（あおむけ）で、頭を血腫と反対側へ約45°回し、穿頭する場所が一番高くなるようにします。',
+   as:'馬蹄形の台に頭をのせ、テープ固定を手伝います。肩の下に枕を入れることもあります。'},
+  {title:'マーキング', view:'ext', t:1,
+   op:'CTで血腫の位置と最も厚い場所、正中偏位（真ん中のずれ）を確認し、穿頭位置に印をつけます。',
+   as:'CT画像をすぐ見られるよう表示しておきます。抗凝固薬・抗血小板薬を飲んでいないかも確認します。'},
+  {title:'剃毛・消毒', view:'ext', t:1,
+   op:'切開部の周りの髪を剃り、消毒します。',
+   as:'剃毛の道具と消毒薬を準備します。髪が術野に入らないよう整えます。'},
+  {title:'ドレーピング', view:'ext', t:1,
+   op:'清潔な覆布（ドレープ）をかけて、手術する場所だけを出します。',
+   as:'ドレープ一式を清潔に渡します。'},
+  {title:'局所麻酔', view:'sec', t:1, hole:'none',
+   op:'切開線に沿って局所麻酔薬を注射します。多くの場合、この手術は局所麻酔で行います。',
+   as:'麻酔薬と注射器を準備します。患者さんの痛みの訴えや様子に注意します。'},
+  {title:'皮膚切開', view:'sec', t:1, hole:'none',
+   op:'印の上に約3cmの切開を入れます（長さは施設や症例で異なります）。',
+   as:'電気メスと吸引を準備し、止血を手伝います。開創器で切開部を広げます。'},
+  {title:'骨膜剥離', view:'sec', t:1, hole:'none',
+   op:'骨膜（骨の表面の膜）を剥がして、頭蓋骨を出します。',
+   as:'骨膜剥離子を渡します。'},
+  {title:'穿頭', view:'sec', t:1, hole:'open',
+   op:'ドリルで頭蓋骨に孔を開けます。孔の大きさは約1〜1.5cmが目安とされます。',
+   as:'ドリルを渡します。骨の切り口にはボーンワックスを使うことがあります。'},
+  {title:'硬膜切開・外膜切開', view:'sec', t:1, hole:'open',
+   op:'硬膜をバイポーラで焼いてから十字に切り、血腫を包む外膜を開けます。',
+   as:'バイポーラとメス、硬膜フックを渡します。このあと血腫が流れ出るので吸引を準備します。'},
+  {title:'血腫の排出', view:'sec', t:0.55, hole:'open',
+   op:'黒褐色の液状血腫が流れ出ます。急に抜けすぎないよう、出方を見ながら進めます。',
+   as:'出てきた血腫の量をはかります。血圧や意識など、患者さんの状態を観察します。'},
+  {title:'血腫腔の洗浄', view:'sec', t:0.22, hole:'open', heme:'#9C4A38',
+   op:'温めた生理食塩水で血腫腔をやさしく洗い、洗浄液が澄んでくるまで繰り返します。',
+   as:'温生食と洗浄用シリンジを切らさないよう補充します。出てくる液の色の変化を一緒に見ます。'},
+  {title:'ドレーン挿入', view:'sec', t:0.10, hole:'open',
+   op:'閉鎖式ドレーンを血腫腔に入れ、先端を腔の広い部分へ向けます。',
+   as:'ドレーンを清潔に渡します。入れる長さの印を一緒に確認します。'},
+  {title:'閉創', view:'sec', t:0.08, hole:'closed',
+   op:'創を縫って閉じます。ドレーンは別の小さな切開から出すこともあります。',
+   as:'縫合糸と針を渡します。ドレーンが引っ張られないように持ちます。'},
+  {title:'ドレーン固定・バッグ接続', view:'sec', t:0.06, hole:'closed',
+   op:'ドレーンを皮膚に固定し、閉鎖式バッグにつなぎます。吸引はかけません。',
+   as:'バッグは頭より低い位置に置きます。排液の量と色の観察を申し送ります。'}
+];
+function stepOverlay(i){
+  switch(i){
+    case 4: return `<g transform="${SITE}">
+      <rect x="-11" y="-80" width="22" height="32" rx="5" fill="#EAF6FF" stroke="#38302B" stroke-width="2.2"/>
+      <rect x="-11" y="-62" width="22" height="14" fill="#BFE3F2"/>
+      <rect x="-3" y="-92" width="6" height="12" fill="#9AA0A6"/>
+      <rect x="-1.6" y="-48" width="3.2" height="42" fill="#9AA0A6"/>
+      <ellipse cx="0" cy="-4" rx="11" ry="4.5" fill="#F8D7AC" stroke="#C98F5F" stroke-width="1.2"/>
+      <text class="lbl" x="16" y="-52" font-size="12.5">局所麻酔</text></g>`;
+    case 5: return `<g transform="${SITE}">
+      <rect x="-17" y="-17" width="34" height="13" fill="#FFFDF6"/>
+      <path d="M-17,-6 h34" stroke="#D64545" stroke-width="2.6"/>
+      <path d="M-24,-14 q-6,10 2,16 M24,-14 q6,10 -2,16" fill="none" stroke="#7A6A58" stroke-width="3"/>
+      <path d="M-4,-58 l14,26 l-6,3 l-13,-25 Z" fill="#C9CDD2" stroke="#38302B" stroke-width="1.8"/>
+      <text class="lbl" x="16" y="-30" font-size="12.5">約3cm切開</text></g>`;
+    case 6: return `<g transform="${SITE}">
+      <rect x="-14" y="-13" width="28" height="15" fill="#F7ECD2"/>
+      <path d="M-13,-4 q-15,2 -19,15 q11,4 19,-3 Z" fill="#D9B98C" stroke="#A9805F" stroke-width="1.6"/>
+      <path d="M-30,-34 l16,20" stroke="#9AA0A6" stroke-width="5" stroke-linecap="round"/>
+      <text class="lbl" x="16" y="-24" font-size="12.5">骨を出す</text></g>`;
+    case 7: return `<g transform="${SITE}">
+      <rect x="-18" y="-100" width="36" height="42" rx="7" fill="#8E979E" stroke="#38302B" stroke-width="2.2"/>
+      <rect x="-7" y="-112" width="14" height="14" rx="3" fill="#5F686E"/>
+      <rect x="-2.6" y="-58" width="5.2" height="47" fill="#5F686E"/>
+      <circle class="pulse" cx="0" cy="-64" r="12" fill="none" stroke="#E86A52" stroke-width="2.6"/>
+      <circle cx="-16" cy="2" r="2.4" fill="#DFC491"/><circle cx="17" cy="6" r="2" fill="#DFC491"/><circle cx="13" cy="-4" r="1.7" fill="#DFC491"/>
+      <text class="lbl" x="22" y="-72" font-size="12.5">ドリルで穿頭</text></g>`;
+    case 8: return `<g transform="${SITE}">
+      <path d="M-7,-72 L-1.5,-4 M7,-72 L1.5,-4" stroke="#5F686E" stroke-width="3.4"/>
+      <ellipse cx="0" cy="17" rx="11" ry="5.5" fill="#5E1F16"/>
+      <path d="M-8,13 l16,8 M8,13 l-16,8" stroke="#2E2A26" stroke-width="2.2"/>
+      <text class="lbl" x="16" y="-44" font-size="12.5">硬膜を十字に切る</text></g>`;
+    case 9: return `<g transform="${SITE}">
+      <path class="flow" d="M0,-2 C 14,-22 27,-32 31,-56" fill="none" stroke="#5E1F16" stroke-width="7" stroke-linecap="round"/>
+      <circle class="drip" cx="33" cy="-58" r="4.4" fill="#5E1F16"/>
+      <text class="lbl" x="24" y="-24" font-size="12.5">黒褐色の血腫が出る</text></g>`;
+    case 10: return `<g transform="${SITE}">
+      <rect x="-14" y="-98" width="28" height="46" rx="6" fill="#EAF6FF" stroke="#38302B" stroke-width="2.2"/>
+      <rect x="-14" y="-76" width="28" height="24" fill="#BFE3F2"/>
+      <rect x="-4" y="-110" width="8" height="12" fill="#9AA0A6"/>
+      <path d="M0,-52 L0,14" stroke="#7FB3C8" stroke-width="4.4"/>
+      <text class="lbl" x="20" y="-70" font-size="12.5">温生食で洗浄</text></g>
+      <path class="flow" d="M238,120 q34,10 44,34 M226,196 q30,16 52,6" fill="none" stroke="#9CCFE8" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+      <path class="flow" d="M0,-2 C 14,-22 27,-32 31,-56" fill="none" stroke="#C9A184" stroke-width="6" stroke-linecap="round" transform="${SITE}" opacity="0.8"/>`;
+    case 11: return `<g transform="${SITE}">
+      <path d="M0,-80 L0,8 Q2,34 -12,52 Q-28,68 -48,72" fill="none" stroke="#3E7CB1" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="-34" cy="64" r="2.1" fill="#3E7CB1"/><circle cx="-44" cy="70" r="2.1" fill="#3E7CB1"/>
+      <text class="lbl" x="14" y="-56" font-size="12.5">ドレーンを留置</text></g>`;
+    case 12: return `<path d="M322,86 q12,-18 7,-38" fill="none" stroke="#3E7CB1" stroke-width="6" stroke-linecap="round"/>
+      <text class="lbl" x="290" y="40" font-size="11.5">ドレーンは別切開から</text>`;
+    case 13: return `<path d="M328,54 C 384,92 376,150 368,198" fill="none" stroke="#3E7CB1" stroke-width="6"/>
+      <rect x="318" y="52" width="26" height="15" rx="3" fill="#F3E3C0" stroke="#C9A86A" stroke-width="1.4" transform="rotate(24 331 59)"/>
+      <g>
+        <rect x="330" y="198" width="76" height="106" rx="12" fill="#FDFEFE" stroke="#38302B" stroke-width="2.4" opacity="0.94"/>
+        <rect x="335" y="262" width="66" height="37" rx="8" fill="#7C2D1E" opacity="0.88"/>
+        <text class="lbl" x="258" y="322" font-size="12.5">閉鎖式バッグ（吸引なし）</text>
+      </g>`;
+    default: return '';
+  }
+}
+let curStep = 0, speed3 = 1;
+function renderStep(){
+  const s = STEPS[curStep];
+  $('#stepNo').textContent = `ステップ ${curStep+1} / ${STEPS.length}`;
+  $('#stepTitle').textContent = s.title;
+  $('#opLine').textContent = s.op;
+  $('#asLine').textContent = s.as;
+  const stage = $('#stage3');
+  if(s.view === 'ext'){
+    stage.innerHTML = extSVG(curStep);
+  } else {
+    stage.innerHTML = secSVG({t:s.t, hole:s.hole, heme:s.heme, overlay:stepOverlay(curStep), uid:'b'});
+  }
+  const f = speed3 === 0.5 ? 2 : 1;
+  stage.querySelectorAll('.flow').forEach(el => el.style.animationDuration = (1*f)+'s');
+  stage.querySelectorAll('.drip').forEach(el => el.style.animationDuration = (1.8*f)+'s');
+  stage.querySelectorAll('.pulse').forEach(el => el.style.animationDuration = (1.6*f)+'s');
+  const dots = $('#stepDots');
+  dots.innerHTML = STEPS.map((_,i)=>`<i class="${i<curStep?'done':i===curStep?'now':''}"></i>`).join('');
+  $('#prevStep').disabled = curStep === 0;
+  $('#nextStep').textContent = curStep === STEPS.length-1 ? '最初にもどる' : 'つぎへ →';
+}
+$('#prevStep').addEventListener('click', () => { if(curStep>0){ curStep--; renderStep(); } });
+$('#nextStep').addEventListener('click', () => {
+  curStep = curStep === STEPS.length-1 ? 0 : curStep+1; renderStep();
+});
+document.querySelectorAll('[data-speed3]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-speed3]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); speed3 = parseFloat(b.dataset.speed3); renderStep();
+}));
+renderStep();
+
+/* ================= タブ4: クイズ ================= */
+const QUIZ = [
+  {q:'この手術の一番の目的はどれ？',
+   c:['血腫を抜いて、脳への圧迫を取る','頭蓋骨を大きく開けて、血腫を直接見て取る','脳の中の出血を止める'],
+   a:0, e:'血腫の中身は液状なので、小さな穿頭孔から排出・洗浄できます。脳への圧迫を取ることが目的です。'},
+  {q:'穿頭孔（骨の孔）を開ける場所は、どうやって決める？',
+   c:['髪の生え際ならどこでもよい','CTで、血腫が最も厚い部位の直上を確認する','耳の真上が決まりになっている'],
+   a:1, e:'術前にCTで血腫の位置・最大の厚さ・正中偏位を確認し、血腫の最も厚い部位の直上に開けます。'},
+  {q:'血腫腔の洗浄を続ける目安はどれ？',
+   c:['ちょうど100mL使ったら終わり','1分たったら終わり','洗浄液が澄んでくるまで'],
+   a:2, e:'量や時間の決まりはありません。温めた生食でやさしく洗い、出てくる液が澄んでくるまで繰り返します（量は施設・症例で異なります）。'},
+  {q:'術後のドレーン観察で、すぐに報告したい変化はどれ？',
+   c:['排液が急に増える・真っ赤（鮮血）になる','排液が少しずつ減ってくる','バッグの外側が少し汚れる'],
+   a:0, e:'排液の急な増加や鮮血は、再出血のサインのことがあります。量と性状（色・濃さ）の変化を観察します。'},
+  {q:'退院後も含め、再発を疑うサインはどれ？',
+   c:['傷の周りが少し赤くなる','頭痛が強くなる・手足の動きが悪くなる・意識がぼんやりする','ドレーンが抜けたあと、髪が伸びてくる'],
+   a:1, e:'再発はおおむね5〜10%とされます。症状が戻ってきたら、CTで血腫がまたたまっていないか確認します。'}
+];
+let qi = 0, score = 0;
+function renderQuiz(){
+  const body = $('#quizBody');
+  if(qi >= QUIZ.length){
+    body.innerHTML = `<div class="q">結果：${QUIZ.length}問中 ${score}問正解</div>
+      <p class="lead">${score===QUIZ.length ? '全問正解です。目的・位置決め・洗浄・観察・再発のサインまで確認できました。' : 'まちがえた問題は、「てじゅん」タブで流れを確認してみてください。'}</p>
+      <button class="btn" id="quizRetry">もう一度</button>`;
+    $('#quizRetry').addEventListener('click', () => { qi=0; score=0; renderQuiz(); });
+    return;
+  }
+  const q = QUIZ[qi];
+  body.innerHTML = `<div class="q">問題 ${qi+1} / ${QUIZ.length}：${q.q}</div>
+    <div class="choices">${q.c.map((c,i)=>`<button data-i="${i}">${c}</button>`).join('')}</div>
+    <div class="explain" id="qExplain"></div>
+    <div class="controls" style="margin-top:12px;">
+      <button class="btn" id="qNext" style="display:none;">${qi===QUIZ.length-1 ? '結果を見る' : '次の問題へ →'}</button>
+    </div>`;
+  body.querySelectorAll('.choices button').forEach(btn => btn.addEventListener('click', () => {
+    const i = parseInt(btn.dataset.i);
+    const ok = i === q.a;
+    if(ok) score++;
+    body.querySelectorAll('.choices button').forEach(b => {
+      b.disabled = true;
+      if(parseInt(b.dataset.i) === q.a) b.classList.add('ok');
+      else if(b === btn) b.classList.add('ng');
+    });
+    const ex = $('#qExplain');
+    ex.className = 'explain show ' + (ok ? 'good' : 'bad');
+    ex.textContent = (ok ? '正解。' : 'ちがいます。') + q.e;
+    $('#qNext').style.display = '';
+  }));
+  $('#qNext').addEventListener('click', () => { qi++; renderQuiz(); });
+}
+renderQuiz();
+
+/* ================= タブ切替 ================= */
+document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.querySelectorAll('section.tab').forEach(s=>s.classList.remove('active'));
+  $('#'+b.dataset.tab).classList.add('active');
+}));
+</script>
+</body>
+</html>
